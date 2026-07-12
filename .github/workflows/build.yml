@@ -19,7 +19,12 @@ jobs:
     - name: Unzip Project
       run: |
         unzip fastdown.zip -d web-app
-        mv web-app/* ./ || true
+        # अगर ज़िप के अंदर एक और फ़ोल्डर है तो उसे बाहर निकालें
+        if [ -d "web-app/fastdown" ]; then
+          mv web-app/fastdown/* ./
+        else
+          mv web-app/* ./ || true
+        fi
 
     - name: Setup Java JDK
       uses: actions/setup-java@v4
@@ -30,10 +35,18 @@ jobs:
     - name: Setup Android SDK
       uses: android-actions/setup-android@v3
 
+    - name: Create Dummy Package Json
+      run: |
+        echo '{"name": "fastdown", "version": "1.0.0"}' > package.json
+        mkdir -id www
+        cp index.html www/ || true
+        cp -r logo.svg www/ || true
+        cp -r config.xml www/ || true
+
     - name: Install Capacitor
       run: |
         npm install @capacitor/core @capacitor/cli
-        npx cap init "FastDown Pro" "com.fastdown.pro" --web-dir=.
+        npx cap init "FastDown Pro" "com.fastdown.pro" --web-dir=www
         npm install @capacitor/android
         npx cap add android
 
