@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastDown Pro - 4K Ultra HD Universal Downloader</title>
+    <style>
+        :root {
+            --primary: #ff007f;
+            --secondary: #00f2fe;
+            --bg-dark: #0d0e15;
+            --card-bg: #161824;
+            --text-main: #ffffff;
+            --text-muted: #787c93;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+
+        /* ⚡ 1. PROFESSIONAL SPLASH SCREEN STYLE */
+        #splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--bg-dark);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            transition: opacity 0.5s ease, visibility 0.5s;
+        }
+
+        .splash-logo {
+            color: var(--primary);
+            font-size: 42px;
+            font-weight: 900;
+            margin-bottom: 20px;
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.6);
+            animation: pulse 1.5s infinite alternate;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(0, 242, 254, 0.1);
+            border-top: 4px solid var(--secondary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        @keyframes pulse {
+            from { transform: scale(0.95); opacity: 0.8; }
+            to { transform: scale(1.05); opacity: 1; text-shadow: 0 0 30px rgba(255, 0, 127, 0.9); }
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* MAIN APP CONTENT CONTAINER */
+        .app-content {
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.5s ease;
+            width: 100%;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .downloader-card {
+            background-color: var(--card-bg);
+            border: 1px solid #23263a;
+            border-radius: 24px;
+            padding: 30px 24px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+
+        .brand-title {
+            color: var(--primary);
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 0 5px 0;
+            text-shadow: 0 0 15px rgba(255, 0, 127, 0.3);
+        }
+
+        .brand-subtitle {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .platform-tabs {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .tab {
+            background-color: #1f2235;
+            border: none;
+            color: var(--text-muted);
+            padding: 12px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .tab.active { color: #fff; }
+        .tab-instagram.active { background-color: #bc2a8d; }
+        .tab-tiktok.active { background-color: #010101; }
+        .tab-youtube.active { background-color: #ff0000; }
+        .tab-all { grid-column: span 3; background-color: #1f2235; }
+        .tab-all.active { background: linear-gradient(45deg, var(--primary), var(--secondary)); }
+
+        .format-selection {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin: 25px 0;
+        }
+
+        .format-btn {
+            background-color: #1f2235;
+            border: 2px solid transparent;
+            color: var(--text-muted);
+            padding: 15px;
+            border-radius: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            transition: 0.3s;
+        }
+
+        .format-btn.active {
+            border-color: #00f2fe;
+            color: #00f2fe;
+            background-color: rgba(0, 242, 254, 0.05);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .input-group {
+            position: relative;
+            margin-bottom: 25px;
+        }
+
+        .label-text {
+            display: block;
+            text-align: left;
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .select-box, .url-input {
+            width: 100%;
+            background-color: #1f2235;
+            border: 1px solid #2d314d;
+            padding: 16px;
+            border-radius: 14px;
+            color: white;
+            font-size: 15px;
+            box-sizing: border-box;
+            outline: none;
+        }
+
+        .url-input { padding-right: 70px; }
+        .paste-btn {
+            position: absolute;
+            right: 15px;
+            bottom: 12px;
+            background: none;
+            border: none;
+            color: var(--primary);
+            font-weight: bold;
+            font-size: 15px;
+            cursor: pointer;
+        }
+
+        .download-btn {
+            width: 100%;
+            background: linear-gradient(45deg, #a800ff, #ff007f);
+            color: white;
+            border: none;
+            padding: 18px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 16px;
+            cursor: pointer;
+            box-shadow: 0 5px 20px rgba(255, 0, 127, 0.3);
+            transition: 0.3s;
+        }
+
+        .download-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(255, 0, 127, 0.5);
+        }
+
+        .result-box {
+            margin-top: 25px;
+            padding: 20px;
+            border: 1px dashed #2d314d;
+            border-radius: 16px;
+            background-color: rgba(22, 24, 36, 0.5);
+        }
+
+        .success-text {
+            color: #00ffcc;
+            font-weight: bold;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .save-btn {
+            width: 100%;
+            background-color: #00bfa5;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        /* 🚨 2. CUSTOM TOAST NOTIFICATION STYLE */
+        #toast-container {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background-color: #ff3366;
+            color: white;
+            padding: 14px 24px;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 10px 25px rgba(255, 51, 102, 0.4);
+            z-index: 10000;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            pointer-events: none;
+            white-space: nowrap;
+        }
+        #toast-container.show { transform: translateX(-50%) translateY(0); }
+    </style>
+</head>
+<body>
+
+    <!-- ⚡ SPLASH SCREEN SCREEN -->
+    <div id="splash-screen">
+        <div class="splash-logo">⚡ FastDown Pro</div>
+        <div class="spinner"></div>
+    </div>
+
+    <!-- 🚨 CUSTOM TOAST CONTAINER -->
+    <div id="toast-container">❌ कृपया पहले कोई वैध लिंक डालें!</div>
+
+    <!-- MAIN APP CONTENT -->
+    <div class="app-content" id="main-app">
+        <div class="downloader-card">
+            <h1 class="brand-title">FastDown Pro</h1>
+            <div class="brand-subtitle">4K Ultra HD Universal Downloader</div>
+
+            <div class="platform-tabs">
+                <button class="tab tab-instagram active" onclick="switchPlatform('Instagram')">Instagram</button>
+                <button class="tab tab-tiktok" onclick="switchPlatform('TikTok')">TikTok</button>
+                <button class="tab tab-youtube" onclick="switchPlatform('YouTube')">YouTube</button>
+                <button class="tab tab-all" onclick="switchPlatform('All')">All</button>
+            </div>
+
+            <div class="format-selection">
+                <button class="format-btn active" id="mp4Btn" onclick="setFormat('MP4')">
+                    <span>🎥 MP4</span>
+                    <span style="font-size:12px; font-weight:normal;">(Video)</span>
+                </button>
+                <button class="format-btn" id="mp3Btn" onclick="setFormat('MP3')">
+                    <span>🎵 MP3</span>
+                    <span style="font-size:12px; font-weight:normal;">(Audio)</span>
+                </button>
+            </div>
+
+            <div class="input-group" id="qualityGroup">
+                <label class="label-text" id="qualityLabel">Select Video Resolution:</label>
+                <select class="select-box" id="qualitySelect">
+                    <option value="4K">4K (2160p Ultra HD) 🔥</option>
+                    <option value="1080p" selected>1080p (Full HD) - Recommended</option>
+                    <option value="720p">720p (HD)</option>
+                </select>
+            </div>
+
