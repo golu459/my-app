@@ -19,11 +19,20 @@ jobs:
         run: unzip -o myapp.zip
 
       - name: Grant Execute Permission
-        run: chmod +x myapp/android/gradlew
+        run: |
+          if [ -d "myapp" ]; then
+            chmod +x myapp/android/gradlew
+          else
+            chmod +x android/gradlew
+          fi
 
       - name: Build with Gradle
         run: |
-          cd myapp/android
+          if [ -d "myapp" ]; then
+            cd myapp/android
+          else
+            cd android
+          fi
           echo "tasks.withType(com.android.build.gradle.internal.tasks.CheckAarMetadataWorkAction).configureEach { it.enabled = false }" >> app/build.gradle
           ./gradlew assembleDebug
 
@@ -31,6 +40,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: my-android-app
-          path: myapp/android/app/build/outputs/apk/debug/app-debug.apk
-
-          
+          path: |
+            myapp/android/app/build/outputs/apk/debug/app-debug.apk
+            android/app/build/outputs/apk/debug/app-debug.apk
+            
