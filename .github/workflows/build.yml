@@ -1,48 +1,53 @@
-name: Build Android APK
+name: Build HTML to APK
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+    - name: Checkout Code
+      uses: actions/checkout@v4
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: 20
 
-      - name: Unzip Project
-        run: unzip -o myapp.zip
+    - name: Unzip Project
+      run: |
+        unzip fastdown.zip -d web-app
+        mv web-app/* ./ || true
 
-      - name: Grant Execute Permission
-        run: |
-          if [ -d "myapp" ]; then
-            chmod +x myapp/android/gradlew
-          else
-            chmod +x android/gradlew
-          fi
+    - name: Setup Java JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: '17'
+        distribution: 'zulu'
 
-      - name: Build with Gradle
-        run: |
-          if [ -d "myapp" ]; then
-            cd myapp/android
-          else
-            cd android
-          fi
-          echo "tasks.withType(com.android.build.gradle.internal.tasks.CheckAarMetadataWorkAction).configureEach { it.enabled = false }" >> app/build.gradle
-          ./gradlew assembleDebug
+    - name: Setup Android SDK
+      uses: android-actions/setup-android@v3
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: my-android-app
-          path: |
-            myapp/android/app/build/outputs/apk/debug/app-debug.apk
-            android/app/build/outputs/apk/debug/app-debug.apk
+    - name: Install Capacitor
+      run: |
+        npm install @capacitor/core @capacitor/cli
+        npx cap init "FastDown Pro" "com.fastdown.pro" --web-dir=.
+        npm install @capacitor/android
+        npx cap add android
 
+    - name: Sync Code to Android
+      run: npx cap sync
 
-            
+    - name: Build Release APK
+      run: |
+        cd android
+        ./gradlew assembleRelease
+
+    - name: Upload Professional APK
+      uses: actions/upload-artifact@v4
+      with:
+        name: FastDownPro-Release-APK
+        path: android/app/build/outputs/apk/release/app-release-unsigned.apk
+        
