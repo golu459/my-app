@@ -188,17 +188,21 @@
             outline: none;
         }
 
-        .url-input { padding-right: 70px; }
+        .url-input { padding-right: 85px; }
+        
         .paste-btn {
             position: absolute;
-            right: 15px;
-            bottom: 12px;
-            background: none;
+            right: 12px;
+            bottom: 10px;
+            background: linear-gradient(45deg, var(--primary), #a800ff);
             border: none;
-            color: var(--primary);
+            color: white;
             font-weight: bold;
-            font-size: 15px;
+            font-size: 12px;
+            padding: 8px 14px;
+            border-radius: 8px;
             cursor: pointer;
+            box-shadow: 0 2px 8px rgba(255, 0, 127, 0.3);
         }
 
         .download-btn {
@@ -251,7 +255,7 @@
             transition: 0.3s;
         }
 
-        /* 🚨 2. CUSTOM TOAST NOTIFICATION STYLE */
+        /* 🚨 CUSTOM TOAST NOTIFICATION STYLE */
         #toast-container {
             position: fixed;
             bottom: 30px;
@@ -276,7 +280,7 @@
 </head>
 <body>
 
-    <!-- ⚡ SPLASH SCREEN SCREEN -->
+    <!-- ⚡ SPLASH SCREEN -->
     <div id="splash-screen">
         <div class="splash-logo">⚡ FastDown Pro</div>
         <div class="spinner"></div>
@@ -309,6 +313,7 @@
                 </button>
             </div>
 
+            <!-- QUALITY RESOLUTION SELECTION -->
             <div class="input-group" id="qualityGroup">
                 <label class="label-text" id="qualityLabel">Select Video Resolution:</label>
                 <select class="select-box" id="qualitySelect">
@@ -318,3 +323,110 @@
                 </select>
             </div>
 
+            <!-- URL LINK INPUT FIELD -->
+            <div class="input-group" id="urlGroup">
+                <label class="label-text">Paste Video Link Here:</label>
+                <input type="text" class="url-input" id="videoUrl" placeholder="Enter link here...">
+                <button class="paste-btn" onclick="pasteLink()">Paste</button>
+            </div>
+
+            <button class="download-btn" onclick="startDownload()">Download Now</button>
+        </div>
+    </div>
+
+    <!-- 🧠 JAVASCRIPT LOGIC AND CLOUDFLARE WORKER CONNECTION -->
+    <script>
+        let currentPlatform = 'Instagram';
+        let currentFormat = 'MP4';
+
+        // Splash Screen Timeout
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                const mainApp = document.getElementById('main-app');
+                splash.style.opacity = '0';
+                splash.style.visibility = 'hidden';
+                mainApp.style.opacity = '1';
+                mainApp.style.visibility = 'visible';
+                document.body.style.overflow = 'auto';
+                checkCloudflareConnection();
+            }, 2500);
+        });
+
+        // Cloudflare Check
+        async function checkCloudflareConnection() {
+            try {
+                await fetch('https://1.1.1', { mode: 'no-cors' });
+                console.log("Cloudflare Network Connected");
+            } catch (e) {
+                console.log("Using standard connection");
+            }
+        }
+
+        function switchPlatform(platform) {
+            currentPlatform = platform;
+            document.querySelectorAll('.tab').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+        }
+
+        function setFormat(format) {
+            currentFormat = format;
+            document.getElementById('mp4Btn').classList.remove('active');
+            document.getElementById('mp3Btn').classList.remove('active');
+            if(format === 'MP4') {
+                document.getElementById('mp4Btn').classList.add('active');
+                document.getElementById('qualityGroup').style.display = 'block';
+            } else {
+                document.getElementById('mp3Btn').classList.add('active');
+                document.getElementById('qualityGroup').style.display = 'none';
+            }
+        }
+
+        async function pasteLink() {
+            try {
+                const text = await navigator.clipboard.readText();
+                document.getElementById('videoUrl').value = text;
+            } catch (err) {
+                showToast("❌ पेस्ट करने की अनुमति नहीं मिली!");
+            }
+        }
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-container');
+            toast.innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // 🚀 आपका खुद का कस्टम Cloudflare Worker डाउनलोडर इंजन
+        async function startDownload() {
+            const url = document.getElementById('videoUrl').value.trim();
+            const resolution = document.getElementById('qualitySelect').value;
+            
+            if(!url) {
+                showToast("❌ कृपया पहले कोई वैध लिंक डालें!");
+                return;
+            }
+            
+            showToast("⏳ आपकी Cloudflare API लिंक प्रोसेस कर रही है...");
+
+            try {
+                let workerApiUrl = `https://workers.dev{encodeURIComponent(url)}&platform=${currentPlatform.toLowerCase()}&format=${currentFormat.toLowerCase()}&quality=${resolution}`;
+                
+                const link = document.createElement('a');
+                link.href = workerApiUrl;
+                link.setAttribute('download', `FastDownPro_${Date.now()}.${currentFormat.toLowerCase()}`);
+                link.target = '_blank';
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                showToast("⚡ डाउनलोडिंग बैकग्राउंड में शुरू हो गई है!");
+            } catch (error) {
+                showToast("❌ Worker API रेस्पॉन्स एरर! लिंक चेक करें।");
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
